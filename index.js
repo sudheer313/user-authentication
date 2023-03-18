@@ -26,45 +26,30 @@ async function main() {
     // Access a database
     const db = client.db(dbName);
 
-    // Do something with the database
-    // ...
-    const databasesList = await client.db().admin().listDatabases();
-    console.log("Databases:", databasesList.databases);
-
+    // Check if collections exist in the database
     const collectionsList = await db.listCollections().toArray();
-    console.log("Collections:", collectionsList);
 
-    //create collection
-    db.createCollection("users", function (err, res) {
-      if (err) throw err;
+    // If users collection doesn't exist, create it
+    if (!collectionsList.some((c) => c.name === "users")) {
+      await db.createCollection("users");
       console.log("Users collection created!");
 
-      //drop collection if it exists
-
-      db.collection("users").drop(function (err, delOK) {
-        if (err) throw err;
-        if (delOK) console.log("Collection deleted");
-      });
-
       // create unique index for email field
-      db.collection("users").createIndex(
-        { email: 1 },
-        { unique: true },
-        function (err, res) {
-          if (err) throw err;
-          console.log("Index created for email field");
-        }
-      );
-      //Routes
-      app.get("/", (req, res) => {
-        res.send("Hello World");
-      });
+      await db.collection("users").createIndex({ email: 1 }, { unique: true });
+      console.log("Index created for email field");
+    } else {
+      console.log("Users collection already exists!");
+    }
 
-      //start server
-      const PORT = process.env.PORT || 3000;
-      app.listen(PORT, () => {
-        console.log(`Server started on Port ${PORT}`);
-      });
+    //Routes
+    app.get("/", (req, res) => {
+      res.send("Hello World");
+    });
+
+    //start server
+    const PORT = process.env.PORT || 3000;
+    app.listen(PORT, () => {
+      console.log(`Server started on Port ${PORT}`);
     });
   } catch (e) {
     console.error(e);
