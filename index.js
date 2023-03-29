@@ -2,6 +2,7 @@ const express = require("express");
 const app = express();
 const { MongoClient } = require("mongodb");
 
+const usersRouter = require("./routes/users"); //Require the user.js file
 //Middleware
 
 app.use(express.json());
@@ -45,6 +46,8 @@ async function main() {
     app.get("/", (req, res) => {
       res.send("Hello World");
     });
+
+    app.use("/users", usersRouter); // Use the users.js file as middleware
 
     //start server
     const PORT = process.env.PORT || 3000;
