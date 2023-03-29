@@ -1,9 +1,11 @@
+// index.js
 const express = require("express");
-const router = express.Router();
 const mongoose = require("mongoose");
-const User = require("../models/user");
+const app = express();
 
 require("dotenv").config();
+
+const port = process.env.PORT || 3000;
 
 const mongoURI = process.env.MONGO_URI;
 
@@ -19,32 +21,12 @@ mongoose
     console.error("MongoDB connection error:", err);
   });
 
-// user registration route
-router.post("/register", async (req, res) => {
-  const { email, password } = req.body;
+const User = require("../models/user");
 
-  try {
-    // check if user already exists
-    const user = await User.findOne({ email });
-    if (user) {
-      return res.status(409).send("User already exists");
-    }
+app.use(express.json());
 
-    // create new user
-    const newUser = new User({ email, password });
-    await newUser.save();
-    console.log(`User with email ${email} has been registered`);
+app.use("/api/users", require("./routes/users"));
 
-    res.status(201).send("User created successfully");
-  } catch (e) {
-    console.error(e);
-    res.status(500).send("Something went wrong");
-  }
+app.listen(port, () => {
+  console.log(`Server started on Port ${port}`);
 });
-
-// user login route
-router.post("/login", (req, res) => {
-  // user login logic
-});
-
-module.exports = router;
